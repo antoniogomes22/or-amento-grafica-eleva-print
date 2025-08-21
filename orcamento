@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Sistema de Orçamentos</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 20px; background: #f9f9f9; color: #333; }
+    h2 { text-align: center; color: #00B4D8; margin-bottom: 20px; }
+    .form-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    label { display: block; margin-top: 10px; font-weight: bold; color: #333; }
+    input, textarea, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
+    button { margin-top: 15px; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; transition: 0.3s; }
+    .btn-add { background: #D0006F; color: white; width: 100%; }
+    .btn-add:hover { background: #a80055; }
+    .orcamento-card { background: white; border-left: 6px solid #FFD500; padding: 15px; margin: 15px 0; border-radius: 8px; box-shadow: 0 3px 6px rgba(0,0,0,0.08); }
+    .orcamento-card p { margin: 5px 0; }
+    .btn-pdf { background: #00B4D8; color: white; margin-right: 10px; }
+    .btn-del { background: #e74c3c; color: white; }
+    .btn-pdf:hover { background: #0088a8; }
+    .btn-del:hover { background: #c0392b; }
+    h3 { color: #D0006F; }
+    #taxaEntregaField { display: none; }
+  </style>
+</head>
+<body>
+  <h2>📑 Sistema de Orçamentos</h2>
+  
+  <div class="form-card">
+    <label>Cliente:</label>
+    <input type="text" id="cliente">
+
+    <label>Contato (WhatsApp/Telefone):</label>
+    <input type="text" id="contato">
+
+    <label>Endereço:</label>
+    <input type="text" id="endereco">
+
+    <label>CPF ou CNPJ:</label>
+    <input type="text" id="documento">
+
+    <label>Serviço/Produto:</label>
+    <textarea id="descricao"></textarea>
+
+    <label>Valor (R$):</label>
+    <input type="number" id="valor">
+
+    <label>Prazo (dias úteis):</label>
+    <input type="number" id="prazo">
+
+    <label>Entrega ou Retirada:</label>
+    <select id="entregaRetirada" onchange="toggleTaxaEntrega()">
+      <option value="Retirada">Retirada</option>
+      <option value="Entrega">Entrega</option>
+    </select>
+
+    <div id="taxaEntregaField">
+      <label>Taxa de Entrega (R$):</label>
+      <input type="number" id="taxaEntrega" value="0">
+    </div>
+
+    <button class="btn-add" onclick="salvarOrcamento()">Salvar Orçamento</button>
+  </div>
+
+  <h3>📂 Orçamentos Salvos</h3>
+  <div id="listaOrcamentos"></div>
+
+  <script>
+    const { jsPDF } = window.jspdf;
+
+    function toggleTaxaEntrega() {
+      const entrega = document.getElementById("entregaRetirada").value;
+      document.getElementById("taxaEntregaField").style.display = entrega === "Entrega" ? "block" : "none";
+    }
+
+    function salvarOrcamento() {
+      const cliente = document.getElementById("cliente").value;
+      const contato = document.getElementById("contato").value;
+      const endereco = document.getElementById("endereco").value;
+      const documento = document.getElementById("documento").value;
+      const descricao = document.getElementById("descricao").value;
+      const valor = parseFloat(document.getElementById("valor").value).toFixed(2);
+      const prazo = document.getElementById("prazo").value;
+      const entregaRetirada = document.getElementById("entregaRetirada").value;
+      const taxaEntrega = entregaRetirada === "Entrega" ? parseFloat(document.getElementById("taxaEntrega").value).toFixed(2) : 0;
+
+      if (!cliente || !contato || !descricao || !valor || !prazo) {
+        alert("Preencha todos os campos obrigatórios!");
+        return;
+      }
+
+      const orcamentos = JSON.parse(localStorage.getItem("orcamentos")) || [];
+      const id = Date.now();
+      orcamentos.push({ id, cliente, contato, endereco, documento, descricao, valor, prazo, entregaRetirada, taxaEntrega });
+      localStorage.setItem("orcamentos", JSON.stringify(orcamentos));
+
+      carregarOrcamentos();
+      limparCampos();
+    }
+
+    function carregarOrcamentos() {
+      const orcamentos = JSON.parse(localStorage.getItem("orcamentos")) || [];
+      const lista = document.getElementById("listaOrcamentos");
+      lista.innerHTML = "";
+
+      orcamentos.forEach(o => {
+        const div = document.createElement("div");
+        div.className = "orcamento-card";
+        const total = (parseFloat(o.valor) + parseFloat(o.taxaEntrega)).toFixed(2);
+        div.innerHTML = `
+          <p><b>Cliente:</b> ${o.cliente}</p>
+          <p><b>Contato:</b> ${o.contato}</p>
+          <p><b>Endereço:</b> ${o.endereco}</p>
+          <p><b>CPF/CNPJ:</b> ${o.documento}</p>
+          <p><b>Descrição:</b> ${o.descricao}</p>
+          <p><b>Valor:</b> R$ ${o.valor}</p>
+          <p><b>Prazo:</b> ${o.prazo} dias úteis</p>
+          <p><b>Entrega/Retirada:</b> ${o.entregaRetirada}</p>
+          ${o.entregaRetirada === "Entrega" ? `<p><b>Taxa de Entrega:</b> R$ ${o.taxaEntrega}</p>` : ""}
+          <p><b>Total:</b> R$ ${total}</p>
+          <button class="btn-pdf" onclick="gerarPDF(${o.id})">📄 PDF</button>
+          <button class="btn-del" onclick="deletarOrcamento(${o.id})">🗑 Excluir</button>
+        `;
+        lista.appendChild(div);
+      });
+    }
+
+    function gerarPDF(id) {
+      const orcamentos = JSON.parse(localStorage.getItem("orcamentos")) || [];
+      const o = orcamentos.find(x => x.id === id);
+      const total = (parseFloat(o.valor) + parseFloat(o.taxaEntrega)).toFixed(2);
+
+      const doc = new jsPDF();
+      doc.setFontSize(18);
+      doc.setTextColor(0, 180, 216); // azul ciano
+      doc.text("ORÇAMENTO", 80, 20);
+
+      let y = 40;
+
+      function section(titulo, valor, cor) {
+        doc.setFillColor(...cor);
+        doc.rect(15, y - 6, 180, 10, "F"); // tarja colorida
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(12);
+        doc.text(titulo, 20, y);
+        y += 8;
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(11);
+        doc.text(valor, 20, y);
+        y += 15;
+      }
+
+      section("Cliente", o.cliente, [0,180,216]); // Ciano
+      section("Contato", o.contato, [208,0,111]); // Magenta
+      section("Endereço", o.endereco, [255,213,0]); // Amarelo
+      section("CPF/CNPJ", o.documento, [51,51,51]); // Preto
+      section("Descrição", o.descricao, [0,180,216]); 
+      section("Valor", `R$ ${o.valor}`, [208,0,111]); 
+      section("Prazo", `${o.prazo} dias úteis`, [255,213,0]);
+      section("Entrega/Retirada", o.entregaRetirada, [51,51,51]);
+
+      if (o.entregaRetirada === "Entrega") {
+        section("Taxa de Entrega", `R$ ${o.taxaEntrega}`, [0,180,216]);
+      }
+
+      section("TOTAL", `R$ ${total}`, [208,0,111]);
+
+      doc.setFontSize(11);
+      doc.text("__________________________", 20, y + 20);
+      doc.text("Assinatura / Empresa", 20, y + 30);
+
+      doc.save(`orcamento_${o.cliente}.pdf`);
+    }
+
+    function deletarOrcamento(id) {
+      let orcamentos = JSON.parse(localStorage.getItem("orcamentos")) || [];
+      orcamentos = orcamentos.filter(o => o.id !== id);
+      localStorage.setItem("orcamentos", JSON.stringify(orcamentos));
+      carregarOrcamentos();
+    }
+
+    function limparCampos() {
+      document.getElementById("cliente").value = "";
+      document.getElementById("contato").value = "";
+      document.getElementById("endereco").value = "";
+      document.getElementById("documento").value = "";
+      document.getElementById("descricao").value = "";
+      document.getElementById("valor").value = "";
+      document.getElementById("prazo").value = "";
+      document.getElementById("entregaRetirada").value = "Retirada";
+      document.getElementById("taxaEntrega").value = "0";
+      toggleTaxaEntrega();
+    }
+
+    carregarOrcamentos();
+  </script>
+</body>
+</html>
