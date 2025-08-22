@@ -3,174 +3,131 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Orçamentos Eleva Print</title>
+  <title>Sistema de Orçamentos</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f5f5f5;
+      background: #f4f6f7;
       margin: 0;
       padding: 0;
-      text-align: center;
-    }
-     </style>
-</head>
-<body>
-  <!-- 👇 Aqui você coloca a logo -->
-  <div style="text-align:center; margin: 20px 0;">
-    <img src="logo.png" alt="Logo Eleva Print" style="max-width:150px;">
-  </div>
-    .container {
-      max-width: 800px;
-      margin: 30px auto;
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      text-align: left;
-    }
-    h1 {
-      color: #0097a7;
-      text-align: center;
       display: flex;
-      align-items: center;
       justify-content: center;
-      gap: 15px;
+      align-items: flex-start;
+      min-height: 100vh;
     }
-    .logo {
-      max-width: 100px;
-      max-height: 100px;
+
+    .container {
+      background: #fff;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 600px;
+      margin: 20px;
     }
+
+    h2 {
+      text-align: center;
+      color: #0097a7;
+      margin-bottom: 20px;
+    }
+
     label {
-      font-weight: bold;
       display: block;
-      margin: 12px 0 6px;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #333;
+      text-align: left; /* garante alinhamento à esquerda */
     }
-    input, select, textarea {
+
+    input, textarea, select {
       width: 100%;
       padding: 10px;
-      border-radius: 6px;
+      margin-bottom: 15px;
       border: 1px solid #ccc;
+      border-radius: 8px;
       font-size: 14px;
-      text-align: center;
+      box-sizing: border-box;
     }
-    .btn {
-      margin-top: 15px;
+
+    button {
+      background: #0097a7;
+      color: #fff;
       padding: 12px;
-      background: #e91e63;
-      color: white;
       border: none;
       border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
       width: 100%;
-    }
-    .btn:hover {
-      background: #c2185b;
-    }
-    .add-btn {
-      margin-top: 10px;
-      padding: 6px 12px;
-      background: #0097a7;
-      color: white;
-      border: none;
-      border-radius: 6px;
       cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background: #00796b;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>
-      <img src="logo.png" alt="Logo Eleva Print" class="logo">
-      Orçamentos Eleva Print
-    </h1>
+    <h2>Gerar Orçamento</h2>
+    
+    <label for="cliente">Nome do Cliente:</label>
+    <input type="text" id="cliente" placeholder="Digite o nome do cliente">
 
-    <form id="orcamentoForm">
-      <label>Cliente:</label>
-      <input type="text" required>
+    <label for="contato">Contato:</label>
+    <input type="text" id="contato" placeholder="Telefone ou e-mail">
 
-      <label>Contato (WhatsApp/Telefone):</label>
-      <input type="text" id="telefone" maxlength="15" required>
+    <label for="endereco">Endereço:</label>
+    <input type="text" id="endereco" placeholder="Rua, número, bairro, cidade">
 
-      <h3>Endereço</h3>
-      <label>Rua:</label>
-      <input type="text">
-      <label>Bairro:</label>
-      <input type="text">
-      <label>Número:</label>
-      <input type="number">
-      <label>Ponto de Referência:</label>
-      <input type="text">
+    <label for="documento">CPF/CNPJ:</label>
+    <input type="text" id="documento" placeholder="Digite o CPF ou CNPJ">
 
-      <label>CPF ou CNPJ:</label>
-      <input type="text" id="cpfCnpj" maxlength="18" required>
+    <label for="detalhes">Detalhes do Serviço:</label>
+    <textarea id="detalhes" rows="4" placeholder="Exemplo: impressão, quantidade, cores..."></textarea>
 
-      <div id="servicos">
-        <label>Serviço/Produto:</label>
-        <input type="text" name="produto[]">
-        <label>Descrição:</label>
-        <textarea name="descricao[]"></textarea>
-      </div>
-      <button type="button" class="add-btn" onclick="adicionarProduto()">+ Adicionar Produto</button>
+    <label for="entrega">Forma de Recebimento:</label>
+    <select id="entrega">
+      <option value="Retirada">Retirada na loja</option>
+      <option value="Entrega">Entrega</option>
+    </select>
 
-      <label>Valor TOTAL (R$):</label>
-      <input type="text" id="valor" required>
+    <label for="taxa">Taxa de Entrega (se aplicável):</label>
+    <input type="text" id="taxa" placeholder="Exemplo: R$ 15,00">
 
-      <label>Prazo (dias úteis):</label>
-      <input type="number" required>
-
-      <label>Entrega ou Retirada:</label>
-      <select>
-        <option value="Retirada">Retirada</option>
-        <option value="Entrega">Entrega</option>
-      </select>
-
-      <button type="submit" class="btn">Gerar Orçamento</button>
-    </form>
+    <button onclick="gerarPDF()">Gerar Orçamento em PDF</button>
   </div>
 
   <script>
-    // Máscara telefone
-    document.getElementById("telefone").addEventListener("input", function(e) {
-      let v = e.target.value.replace(/\D/g,"");
-      v = v.replace(/^(\d{2})(\d)/g,"($1) $2");
-      v = v.replace(/(\d{5})(\d)/,"$1-$2");
-      e.target.value = v;
-    });
+    function gerarPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
 
-    // Máscara CPF e CNPJ
-    document.getElementById("cpfCnpj").addEventListener("input", function(e) {
-      let v = e.target.value.replace(/\D/g,"");
-      if (v.length <= 11) {
-        v = v.replace(/(\d{3})(\d)/,"$1.$2");
-        v = v.replace(/(\d{3})(\d)/,"$1.$2");
-        v = v.replace(/(\d{3})(\d{1,2})$/,"$1-$2");
-      } else {
-        v = v.replace(/^(\d{2})(\d)/,"$1.$2");
-        v = v.replace(/^(\d{2})\.(\d{3})(\d)/,"$1.$2.$3");
-        v = v.replace(/\.(\d{3})(\d)/,".$1/$2");
-        v = v.replace(/(\d{4})(\d)/,"$1-$2");
-      }
-      e.target.value = v;
-    });
+      let cliente = document.getElementById("cliente").value;
+      let contato = document.getElementById("contato").value;
+      let endereco = document.getElementById("endereco").value;
+      let documento = document.getElementById("documento").value;
+      let detalhes = document.getElementById("detalhes").value;
+      let entrega = document.getElementById("entrega").value;
+      let taxa = document.getElementById("taxa").value;
 
-    // Máscara moeda BRL
-    document.getElementById("valor").addEventListener("input", function(e) {
-      let v = e.target.value.replace(/\D/g,"");
-      v = (v/100).toLocaleString("pt-BR",{style:"currency", currency:"BRL"});
-      e.target.value = v;
-    });
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.text("Orçamento", 105, 20, { align: "center" });
 
-    // Adicionar novos serviços
-    function adicionarProduto() {
-      let div = document.createElement("div");
-      div.innerHTML = `
-        <label>Serviço/Produto:</label>
-        <input type="text" name="produto[]">
-        <label>Descrição:</label>
-        <textarea name="descricao[]"></textarea>
-      `;
-      document.getElementById("servicos").appendChild(div);
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Cliente: ${cliente}`, 20, 40);
+      doc.text(`Contato: ${contato}`, 20, 50);
+      doc.text(`Endereço: ${endereco}`, 20, 60);
+      doc.text(`CPF/CNPJ: ${documento}`, 20, 70);
+      doc.text(`Forma de recebimento: ${entrega}`, 20, 80);
+      if (taxa) doc.text(`Taxa de entrega: ${taxa}`, 20, 90);
+
+      doc.text("Detalhes do Serviço:", 20, 110);
+      doc.text(detalhes, 20, 120);
+
+      doc.save("orcamento.pdf");
     }
   </script>
 </body>
