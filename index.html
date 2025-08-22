@@ -3,152 +3,167 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Orçamentos</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <title>Orçamentos Eleva Print</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f4f4f9;
+      background: #f5f5f5;
       margin: 0;
-      padding: 20px;
-    }
-
-    h1 {
+      padding: 0;
       text-align: center;
-      color: #333;
     }
-
     .container {
       max-width: 800px;
-      margin: auto;
+      margin: 30px auto;
       background: white;
       padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: left;
     }
-
-    .section {
-      margin-bottom: 20px;
-      border-left: 10px solid;
-      padding-left: 10px;
-      border-radius: 5px;
+    h1 {
+      color: #0097a7;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
     }
-
-    .cyan { border-color: #00B7EB; }
-    .magenta { border-color: #FF0090; }
-    .yellow { border-color: #FFD300; }
-    .black { border-color: #333; }
-
+    .logo {
+      max-width: 100px;
+      max-height: 100px;
+    }
     label {
-      display: block;
-      margin-top: 10px;
       font-weight: bold;
+      display: block;
+      margin: 12px 0 6px;
     }
-
-    input, textarea, select {
+    input, select, textarea {
       width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border-radius: 8px;
+      padding: 10px;
+      border-radius: 6px;
       border: 1px solid #ccc;
+      font-size: 14px;
+      text-align: center;
     }
-
-    button {
-      background: linear-gradient(90deg, #00B7EB, #FF0090, #FFD300, #333);
+    .btn {
+      margin-top: 15px;
+      padding: 12px;
+      background: #e91e63;
       color: white;
       border: none;
-      padding: 12px;
-      border-radius: 12px;
-      cursor: pointer;
+      border-radius: 8px;
       font-size: 16px;
+      cursor: pointer;
       width: 100%;
-      margin-top: 20px;
     }
-
-    button:hover {
-      opacity: 0.9;
+    .btn:hover {
+      background: #c2185b;
     }
-
-    .tarja {
-      font-weight: bold;
+    .add-btn {
+      margin-top: 10px;
+      padding: 6px 12px;
+      background: #0097a7;
       color: white;
-      padding: 5px 10px;
-      border-radius: 5px;
-      margin-bottom: 10px;
-      display: inline-block;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
     }
-
-    .cyan-bg { background: #00B7EB; }
-    .magenta-bg { background: #FF0090; }
-    .yellow-bg { background: #FFD300; color: #333; }
-    .black-bg { background: #333; }
   </style>
 </head>
 <body>
-  <h1>Sistema de Orçamentos</h1>
-  <div class="container" id="orcamento">
-    
-    <div class="section cyan">
-      <span class="tarja cyan-bg">Dados do Cliente</span>
-      <label>Nome</label>
-      <input type="text" id="nome">
+  <div class="container">
+    <h1>
+      <img src="logo.png" alt="Logo Eleva Print" class="logo">
+      Orçamentos Eleva Print
+    </h1>
 
-      <label>Contato</label>
-      <input type="text" id="contato">
+    <form id="orcamentoForm">
+      <label>Cliente:</label>
+      <input type="text" required>
 
-      <label>Endereço</label>
-      <input type="text" id="endereco">
+      <label>Contato (WhatsApp/Telefone):</label>
+      <input type="text" id="telefone" maxlength="15" required>
 
-      <label>CPF/CNPJ</label>
-      <input type="text" id="documento">
-    </div>
+      <h3>Endereço</h3>
+      <label>Rua:</label>
+      <input type="text">
+      <label>Bairro:</label>
+      <input type="text">
+      <label>Número:</label>
+      <input type="number">
+      <label>Ponto de Referência:</label>
+      <input type="text">
 
-    <div class="section magenta">
-      <span class="tarja magenta-bg">Especificações</span>
-      <label>Descrição do Serviço</label>
-      <textarea id="descricao"></textarea>
+      <label>CPF ou CNPJ:</label>
+      <input type="text" id="cpfCnpj" maxlength="18" required>
 
-      <label>Quantidade</label>
-      <input type="number" id="quantidade">
+      <div id="servicos">
+        <label>Serviço/Produto:</label>
+        <input type="text" name="produto[]">
+        <label>Descrição:</label>
+        <textarea name="descricao[]"></textarea>
+      </div>
+      <button type="button" class="add-btn" onclick="adicionarProduto()">+ Adicionar Produto</button>
 
-      <label>Preço Unitário (R$)</label>
-      <input type="number" id="preco">
-    </div>
+      <label>Valor TOTAL (R$):</label>
+      <input type="text" id="valor" required>
 
-    <div class="section yellow">
-      <span class="tarja yellow-bg">Entrega</span>
-      <label>Forma</label>
-      <select id="formaEntrega">
+      <label>Prazo (dias úteis):</label>
+      <input type="number" required>
+
+      <label>Entrega ou Retirada:</label>
+      <select>
         <option value="Retirada">Retirada</option>
         <option value="Entrega">Entrega</option>
       </select>
 
-      <label>Taxa de Entrega (R$)</label>
-      <input type="number" id="taxa" value="0">
-    </div>
-
-    <div class="section black">
-      <span class="tarja black-bg">Observações</span>
-      <textarea id="observacoes"></textarea>
-    </div>
+      <button type="submit" class="btn">Gerar Orçamento</button>
+    </form>
   </div>
 
-  <button onclick="gerarPDF()">Gerar Orçamento em PDF</button>
-
   <script>
-    async function gerarPDF() {
-      const { jsPDF } = window.jspdf;
-      const orcamento = document.getElementById("orcamento");
+    // Máscara telefone
+    document.getElementById("telefone").addEventListener("input", function(e) {
+      let v = e.target.value.replace(/\D/g,"");
+      v = v.replace(/^(\d{2})(\d)/g,"($1) $2");
+      v = v.replace(/(\d{5})(\d)/,"$1-$2");
+      e.target.value = v;
+    });
 
-      const canvas = await html2canvas(orcamento, { scale: 2 });
-      const imgData = canvas.toDataURL("image/png");
+    // Máscara CPF e CNPJ
+    document.getElementById("cpfCnpj").addEventListener("input", function(e) {
+      let v = e.target.value.replace(/\D/g,"");
+      if (v.length <= 11) {
+        v = v.replace(/(\d{3})(\d)/,"$1.$2");
+        v = v.replace(/(\d{3})(\d)/,"$1.$2");
+        v = v.replace(/(\d{3})(\d{1,2})$/,"$1-$2");
+      } else {
+        v = v.replace(/^(\d{2})(\d)/,"$1.$2");
+        v = v.replace(/^(\d{2})\.(\d{3})(\d)/,"$1.$2.$3");
+        v = v.replace(/\.(\d{3})(\d)/,".$1/$2");
+        v = v.replace(/(\d{4})(\d)/,"$1-$2");
+      }
+      e.target.value = v;
+    });
 
-      const pdf = new jsPDF("p", "mm", "a4");
-      const largura = pdf.internal.pageSize.getWidth();
-      const altura = pdf.internal.pageSize.getHeight();
-      pdf.addImage(imgData, "PNG", 0, 0, largura, altura);
-      pdf.save("orcamento.pdf");
+    // Máscara moeda BRL
+    document.getElementById("valor").addEventListener("input", function(e) {
+      let v = e.target.value.replace(/\D/g,"");
+      v = (v/100).toLocaleString("pt-BR",{style:"currency", currency:"BRL"});
+      e.target.value = v;
+    });
+
+    // Adicionar novos serviços
+    function adicionarProduto() {
+      let div = document.createElement("div");
+      div.innerHTML = `
+        <label>Serviço/Produto:</label>
+        <input type="text" name="produto[]">
+        <label>Descrição:</label>
+        <textarea name="descricao[]"></textarea>
+      `;
+      document.getElementById("servicos").appendChild(div);
     }
   </script>
 </body>
