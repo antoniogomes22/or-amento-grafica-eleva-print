@@ -2,133 +2,247 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Orçamentos</title>
+  <title>Orçamentos Eleva Print</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f7;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-    }
-
-    .container {
-      background: #fff;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 600px;
-      margin: 20px;
-    }
-
-    h2 {
-      text-align: center;
-      color: #0097a7;
-      margin-bottom: 20px;
-    }
-
-    label {
-      display: block;
-      font-weight: bold;
-      margin-bottom: 5px;
-      color: #333;
-      text-align: left; /* garante alinhamento à esquerda */
-    }
-
-    input, textarea, select {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 14px;
-      box-sizing: border-box;
-    }
-
-    button {
-      background: #0097a7;
-      color: #fff;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      width: 100%;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    button:hover {
-      background: #00796b;
-    }
+    body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 850px; margin: 20px auto; padding: 20px; background: #f9f9f9; color: #333; }
+    h2 { text-align: center; color: #00B4D8; margin-bottom: 20px; position: relative; }
+    #logo { position: absolute; top: 0; left: 20px; height: 60px; }
+    .form-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    label { display: block; margin-top: 10px; font-weight: bold; color: #333; }
+    input, textarea, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
+    button { margin-top: 15px; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: 0.3s; }
+    .btn-add { background: #D0006F; color: white; width: 100%; }
+    .btn-add:hover { background: #a80055; }
+    .btn-service { background: #FFD500; color: #333; margin-top: 8px; }
+    .btn-service:hover { background: #e6c200; }
+    .orcamento-card { background: white; border-left: 6px solid #FFD500; padding: 15px; margin: 15px 0; border-radius: 8px; box-shadow: 0 3px 6px rgba(0,0,0,0.08); }
+    .orcamento-card p { margin: 5px 0; }
+    .btn-pdf { background: #00B4D8; color: white; margin-right: 10px; }
+    .btn-del { background: #e74c3c; color: white; }
+    .btn-pdf:hover { background: #0088a8; }
+    .btn-del:hover { background: #c0392b; }
+    h3 { color: #D0006F; }
+    #taxaEntregaField { display: none; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Gerar Orçamento</h2>
-    
-    <label for="cliente">Nome do Cliente:</label>
-    <input type="text" id="cliente" placeholder="Digite o nome do cliente">
+  <!-- LOGO -->
+  <img id="logo" src="logo.png" alt="Logo"> 
 
-    <label for="contato">Contato:</label>
-    <input type="text" id="contato" placeholder="Telefone ou e-mail">
+  <h2>📑 Orçamentos Eleva Print</h2>
+  
+  <div class="form-card">
+    <label>Cliente:</label>
+    <input type="text" id="cliente">
 
-    <label for="endereco">Endereço:</label>
-    <input type="text" id="endereco" placeholder="Rua, número, bairro, cidade">
+    <label>Contato (WhatsApp/Telefone):</label>
+    <input type="text" id="contato" maxlength="15" oninput="formatarTelefone(this)">
 
-    <label for="documento">CPF/CNPJ:</label>
-    <input type="text" id="documento" placeholder="Digite o CPF ou CNPJ">
+    <h4>📍 Endereço</h4>
+    <label>Rua:</label>
+    <input type="text" id="rua">
+    <label>Bairro:</label>
+    <input type="text" id="bairro">
+    <label>Número:</label>
+    <input type="number" id="numero">
+    <label>Ponto de Referência:</label>
+    <input type="text" id="referencia">
 
-    <label for="detalhes">Detalhes do Serviço:</label>
-    <textarea id="detalhes" rows="4" placeholder="Exemplo: impressão, quantidade, cores..."></textarea>
+    <label>CPF ou CNPJ:</label>
+    <input type="text" id="documento" oninput="formatarDocumento(this)">
 
-    <label for="entrega">Forma de Recebimento:</label>
-    <select id="entrega">
-      <option value="Retirada">Retirada na loja</option>
+    <label>Serviço/Produto:</label>
+    <div id="servicos">
+      <input type="text" class="servico">
+    </div>
+    <button type="button" class="btn-service" onclick="adicionarServico()">➕ Adicionar Serviço</button>
+
+    <label>Descrição Adicional:</label>
+    <textarea id="descricao"></textarea>
+
+    <label>Valor TOTAL (R$):</label>
+    <input type="text" id="valor" oninput="formatarMoeda(this)">
+
+    <label>Prazo (dias úteis):</label>
+    <input type="number" id="prazo">
+
+    <label>Entrega ou Retirada:</label>
+    <select id="entregaRetirada" onchange="toggleTaxaEntrega()">
+      <option value="Retirada">Retirada</option>
       <option value="Entrega">Entrega</option>
     </select>
 
-    <label for="taxa">Taxa de Entrega (se aplicável):</label>
-    <input type="text" id="taxa" placeholder="Exemplo: R$ 15,00">
+    <div id="taxaEntregaField">
+      <label>Taxa de Entrega (R$):</label>
+      <input type="text" id="taxaEntrega" value="0" oninput="formatarMoeda(this)">
+    </div>
 
-    <button onclick="gerarPDF()">Gerar Orçamento em PDF</button>
+    <button class="btn-add" onclick="salvarOrcamento()">Salvar Orçamento</button>
   </div>
 
+  <h3>📂 Orçamentos Salvos</h3>
+  <div id="listaOrcamentos"></div>
+
   <script>
-    function gerarPDF() {
-      const { jsPDF } = window.jspdf;
+    const { jsPDF } = window.jspdf;
+
+    // 📱 Formatar telefone
+    function formatarTelefone(input) {
+      let v = input.value.replace(/\D/g, "").substring(0, 11);
+      if (v.length <= 10) {
+        input.value = v.replace(/(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3");
+      } else {
+        input.value = v.replace(/(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3");
+      }
+    }
+
+    // 🧾 Formatar CPF/CNPJ
+    function formatarDocumento(input) {
+      let v = input.value.replace(/\D/g, "");
+      if (v.length <= 11) {
+        input.value = v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, "$1.$2.$3-$4");
+      } else {
+        input.value = v.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2})/, "$1.$2.$3/$4-$5");
+      }
+    }
+
+    // 💰 Formatar moeda BRL
+    function formatarMoeda(input) {
+      let v = input.value.replace(/\D/g, "");
+      if (!v) { input.value = ""; return; }
+      v = (v/100).toLocaleString("pt-BR", {style:"currency", currency:"BRL"});
+      input.value = v;
+    }
+
+    // ➕ Adicionar serviço extra
+    function adicionarServico() {
+      let div = document.createElement("div");
+      div.innerHTML = '<input type="text" class="servico">';
+      document.getElementById("servicos").appendChild(div);
+    }
+
+    function toggleTaxaEntrega() {
+      const entrega = document.getElementById("entregaRetirada").value;
+      document.getElementById("taxaEntregaField").style.display = entrega === "Entrega" ? "block" : "none";
+    }
+
+    function salvarOrcamento() {
+      const cliente = document.getElementById("cliente").value;
+      const contato = document.getElementById("contato").value;
+      const rua = document.getElementById("rua").value;
+      const bairro = document.getElementById("bairro").value;
+      const numero = document.getElementById("numero").value;
+      const referencia = document.getElementById("referencia").value;
+      const endereco = `${rua}, ${numero} - ${bairro}. Ref: ${referencia}`;
+      const documento = document.getElementById("documento").value;
+      const servicos = [...document.querySelectorAll(".servico")].map(s => s.value).filter(s => s);
+      const descricao = document.getElementById("descricao").value;
+      const valor = document.getElementById("valor").value;
+      const prazo = document.getElementById("prazo").value;
+      const entregaRetirada = document.getElementById("entregaRetirada").value;
+      const taxaEntrega = entregaRetirada === "Entrega" ? document.getElementById("taxaEntrega").value : "R$ 0,00";
+
+      if (!cliente || !contato || !valor || !prazo) {
+        alert("Preencha todos os campos obrigatórios!");
+        return;
+      }
+
+      const orcamentos = JSON.parse(localStorage.getItem("orcamentos")) || [];
+      const id = Date.now();
+      orcamentos.push({ id, cliente, contato, endereco, documento, servicos, descricao, valor, prazo, entregaRetirada, taxaEntrega });
+      localStorage.setItem("orcamentos", JSON.stringify(orcamentos));
+
+      carregarOrcamentos();
+      limparCampos();
+    }
+
+    function carregarOrcamentos() {
+      const orcamentos = JSON.parse(localStorage.getItem("orcamentos")) || [];
+      const lista = document.getElementById("listaOrcamentos");
+      lista.innerHTML = "";
+
+      orcamentos.forEach(o => {
+        const div = document.createElement("div");
+        div.className = "orcamento-card";
+        div.innerHTML = `
+          <p><b>Cliente:</b> ${o.cliente}</p>
+          <p><b>Contato:</b> ${o.contato}</p>
+          <p><b>Endereço:</b> ${o.endereco}</p>
+          <p><b>CPF/CNPJ:</b> ${o.documento}</p>
+          <p><b>Serviços:</b><br> ${o.servicos.join("<br>")}</p>
+          <p><b>Descrição:</b> ${o.descricao}</p>
+          <p><b>Valor:</b> ${o.valor}</p>
+          <p><b>Prazo:</b> ${o.prazo} dias úteis</p>
+          <p><b>Entrega/Retirada:</b> ${o.entregaRetirada}</p>
+          ${o.entregaRetirada === "Entrega" ? `<p><b>Taxa de Entrega:</b> ${o.taxaEntrega}</p>` : ""}
+          <button class="btn-pdf" onclick="gerarPDF(${o.id})">📄 PDF</button>
+          <button class="btn-del" onclick="deletarOrcamento(${o.id})">🗑 Excluir</button>
+        `;
+        lista.appendChild(div);
+      });
+    }
+
+    // 📄 GERAR PDF
+    function gerarPDF(id) {
+      const orcamentos = JSON.parse(localStorage.getItem("orcamentos")) || [];
+      const o = orcamentos.find(x => x.id === id);
+
       const doc = new jsPDF();
 
-      let cliente = document.getElementById("cliente").value;
-      let contato = document.getElementById("contato").value;
-      let endereco = document.getElementById("endereco").value;
-      let documento = document.getElementById("documento").value;
-      let detalhes = document.getElementById("detalhes").value;
-      let entrega = document.getElementById("entrega").value;
-      let taxa = document.getElementById("taxa").value;
+      // Logo (precisa ser base64 se quiser carregar no PDF)
+      // doc.addImage("logo.png", "PNG", 15, 10, 30, 30);
 
-      doc.setFont("helvetica", "bold");
       doc.setFontSize(18);
-      doc.text("Orçamento", 105, 20, { align: "center" });
+      doc.setTextColor(0, 180, 216);
+      doc.text("ORÇAMENTO - ELEVA PRINT", 105, 20, { align: "center" });
 
+      let y = 40;
       doc.setFontSize(12);
-      doc.setFont("helvetica", "normal");
-      doc.text(`Cliente: ${cliente}`, 20, 40);
-      doc.text(`Contato: ${contato}`, 20, 50);
-      doc.text(`Endereço: ${endereco}`, 20, 60);
-      doc.text(`CPF/CNPJ: ${documento}`, 20, 70);
-      doc.text(`Forma de recebimento: ${entrega}`, 20, 80);
-      if (taxa) doc.text(`Taxa de entrega: ${taxa}`, 20, 90);
+      doc.setTextColor(0,0,0);
 
-      doc.text("Detalhes do Serviço:", 20, 110);
-      doc.text(detalhes, 20, 120);
+      doc.text(`Cliente: ${o.cliente}`, 20, y); y+=8;
+      doc.text(`Contato: ${o.contato}`, 20, y); y+=8;
+      doc.text(`Endereço: ${o.endereco}`, 20, y); y+=8;
+      doc.text(`CPF/CNPJ: ${o.documento}`, 20, y); y+=12;
 
-      doc.save("orcamento.pdf");
+      doc.setFontSize(13);
+      doc.text("Serviços:", 20, y); y+=6;
+      doc.setFontSize(12);
+      o.servicos.forEach(s => { doc.text(`- ${s}`, 25, y); y+=6; });
+
+      y+=4;
+      doc.text(`Descrição adicional: ${o.descricao}`, 20, y); y+=12;
+
+      doc.text(`Valor Total: ${o.valor}`, 20, y); y+=8;
+      doc.text(`Prazo: ${o.prazo} dias úteis`, 20, y); y+=8;
+      doc.text(`Entrega/Retirada: ${o.entregaRetirada}`, 20, y); y+=8;
+      if (o.entregaRetirada === "Entrega") {
+        doc.text(`Taxa de Entrega: ${o.taxaEntrega}`, 20, y); y+=8;
+      }
+
+      y+=20;
+      doc.text("__________________________", 20, y);
+      doc.text("Assinatura / Empresa", 20, y+10);
+
+      doc.save(`orcamento_${o.cliente}.pdf`);
     }
+
+    function deletarOrcamento(id) {
+      let orcamentos = JSON.parse(localStorage.getItem("orcamentos")) || [];
+      orcamentos = orcamentos.filter(o => o.id !== id);
+      localStorage.setItem("orcamentos", JSON.stringify(orcamentos));
+      carregarOrcamentos();
+    }
+
+    function limparCampos() {
+      document.querySelectorAll("input, textarea").forEach(el => el.value = "");
+      document.getElementById("entregaRetirada").value = "Retirada";
+      document.getElementById("servicos").innerHTML = '<input type="text" class="servico">';
+      toggleTaxaEntrega();
+    }
+
+    carregarOrcamentos();
   </script>
 </body>
 </html>
