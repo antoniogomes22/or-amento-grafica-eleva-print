@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Orçamentos</title>
+  <title>Orçamento Eleva Print</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
@@ -27,10 +27,21 @@
       margin: 20px;
     }
 
-    h2 {
-      text-align: center;
+    .logo-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .logo-header img {
+      width: 60px; /* tamanho da logo */
+      margin-right: 10px;
+    }
+
+    .logo-header h2 {
+      margin: 0;
       color: #0097a7;
-      margin-bottom: 20px;
+      font-size: 20px;
     }
 
     label {
@@ -49,6 +60,7 @@
       border-radius: 8px;
       font-size: 14px;
       box-sizing: border-box;
+      text-align: left; /* respostas digitadas ficam à esquerda */
     }
 
     button {
@@ -69,7 +81,11 @@
 </head>
 <body>
   <div class="container">
-    <h2>Gerar Orçamento</h2>
+    <!-- Logo + título alinhados à esquerda -->
+    <div class="logo-header">
+      <img src="logo.png" alt="Logo">
+      <h2>Gerar Orçamento</h2>
+    </div>
     
     <label for="cliente">Nome do Cliente:</label>
     <input type="text" id="cliente" placeholder="Digite o nome do cliente">
@@ -111,23 +127,37 @@
       let entrega = document.getElementById("entrega").value;
       let taxa = document.getElementById("taxa").value;
 
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(18);
-      doc.text("Orçamento", 105, 20, { align: "center" });
+      let img = new Image();
+      img.src = "logo.png";
 
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "normal");
-      doc.text(`Cliente: ${cliente}`, 20, 40);
-      doc.text(`Contato: ${contato}`, 20, 50);
-      doc.text(`Endereço: ${endereco}`, 20, 60);
-      doc.text(`CPF/CNPJ: ${documento}`, 20, 70);
-      doc.text(`Forma de recebimento: ${entrega}`, 20, 80);
-      if (taxa) doc.text(`Taxa de entrega: ${taxa}`, 20, 90);
+      img.onload = function () {
+        // Logo no canto superior esquerdo
+        doc.addImage(img, "PNG", 15, 10, 25, 25);
 
-      doc.text("Detalhes do Serviço:", 20, 110);
-      doc.text(detalhes, 20, 120);
+        // Título alinhado à esquerda da logo
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.text("Orçamento", 45, 25, { align: "left" });
 
-      doc.save("orcamento.pdf");
+        // Conteúdo alinhado à esquerda
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "normal");
+
+        let y = 50; // posição inicial no PDF
+        doc.text(`Cliente: ${cliente}`, 20, y); y += 10;
+        doc.text(`Contato: ${contato}`, 20, y); y += 10;
+        doc.text(`Endereço: ${endereco}`, 20, y); y += 10;
+        doc.text(`CPF/CNPJ: ${documento}`, 20, y); y += 10;
+        doc.text(`Forma de recebimento: ${entrega}`, 20, y); y += 10;
+        if (taxa) { doc.text(`Taxa de entrega: ${taxa}`, 20, y); y += 10; }
+
+        y += 10;
+        doc.text("Detalhes do Serviço:", 20, y); 
+        y += 10;
+        doc.text(detalhes, 20, y, { maxWidth: 170, align: "left" });
+
+        doc.save("orcamento.pdf");
+      };
     }
   </script>
 </body>
