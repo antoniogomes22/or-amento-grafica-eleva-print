@@ -5,7 +5,7 @@
   <title>Orçamentos Eleva Print</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 850px; margin: 20px auto; padding: 20px; background: #f9f9f9; color: #333; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 950px; margin: 20px auto; padding: 20px; background: #f9f9f9; color: #333; }
     h2 { text-align: center; color: #00B4D8; margin-bottom: 20px; position: relative; }
     #logo { position: absolute; top: 0; left: 20px; height: 60px; }
     .form-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -24,6 +24,8 @@
     .btn-del:hover { background: #c0392b; }
     h3 { color: #D0006F; }
     #taxaEntregaField { display: none; }
+    .servico-group { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+    .servico-group input { margin-top: 0; }
   </style>
 </head>
 <body>
@@ -33,6 +35,9 @@
   <h2>📑 Orçamentos Eleva Print</h2>
   
   <div class="form-card">
+    <label>N° do Orçamento:</label>
+    <input type="text" id="numeroOrcamento" value="ORC-${Date.now()}" />
+
     <label>Cliente:</label>
     <input type="text" id="cliente">
 
@@ -52,17 +57,19 @@
     <label>CPF ou CNPJ:</label>
     <input type="text" id="documento" oninput="formatarDocumento(this)">
 
-    <label>Serviço/Produto:</label>
+    <label>Serviços/Produtos:</label>
     <div id="servicos">
-      <input type="text" class="servico">
+      <div class="servico-group">
+        <input type="text" class="descricao" placeholder="Descrição">
+        <input type="number" class="quantidade" placeholder="Qtd" min="1" value="1" oninput="atualizarTotais()">
+        <input type="text" class="valorUnitario" placeholder="Valor Unitário" oninput="formatarMoeda(this); atualizarTotais()">
+        <input type="text" class="totalItem" placeholder="Total" readonly>
+      </div>
     </div>
     <button type="button" class="btn-service" onclick="adicionarServico()">➕ Adicionar Serviço</button>
 
     <label>Descrição Adicional:</label>
     <textarea id="descricao"></textarea>
-
-    <label>Valor TOTAL (R$):</label>
-    <input type="text" id="valor" oninput="formatarMoeda(this)">
 
     <label>Prazo (dias úteis):</label>
     <input type="number" id="prazo">
@@ -75,8 +82,11 @@
 
     <div id="taxaEntregaField">
       <label>Taxa de Entrega (R$):</label>
-      <input type="text" id="taxaEntrega" value="0" oninput="formatarMoeda(this)">
+      <input type="text" id="taxaEntrega" value="0" oninput="formatarMoeda(this); atualizarTotais()">
     </div>
+
+    <label><b>Total Geral (R$):</b></label>
+    <input type="text" id="valorTotal" readonly>
 
     <button class="btn-add" onclick="salvarOrcamento()">Salvar Orçamento</button>
   </div>
@@ -91,25 +101,25 @@
     function formatarTelefone(input) {
       let v = input.value.replace(/\D/g, "").substring(0, 11);
       if (v.length <= 10) {
-        input.value = v.replace(/(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3");
+        input.value = v.replace(/(\\d{2})(\\d{4})(\\d{0,4})/, "($1) $2-$3");
       } else {
-        input.value = v.replace(/(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3");
+        input.value = v.replace(/(\\d{2})(\\d{5})(\\d{0,4})/, "($1) $2-$3");
       }
     }
 
     // 🧾 Formatar CPF/CNPJ
     function formatarDocumento(input) {
-      let v = input.value.replace(/\D/g, "");
+      let v = input.value.replace(/\\D/g, "");
       if (v.length <= 11) {
-        input.value = v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, "$1.$2.$3-$4");
+        input.value = v.replace(/(\\d{3})(\\d{3})(\\d{3})(\\d{0,2})/, "$1.$2.$3-$4");
       } else {
-        input.value = v.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2})/, "$1.$2.$3/$4-$5");
+        input.value = v.replace(/(\\d{2})(\\d{3})(\\d{3})(\\d{4})(\\d{0,2})/, "$1.$2.$3/$4-$5");
       }
     }
 
     // 💰 Formatar moeda BRL
     function formatarMoeda(input) {
-      let v = input.value.replace(/\D/g, "");
+      let v = input.value.replace(/\\D/g, "");
       if (!v) { input.value = ""; return; }
       v = (v/100).toLocaleString("pt-BR", {style:"currency", currency:"BRL"});
       input.value = v;
@@ -118,16 +128,44 @@
     // ➕ Adicionar serviço extra
     function adicionarServico() {
       let div = document.createElement("div");
-      div.innerHTML = '<input type="text" class="servico">';
+      div.className = "servico-group";
+      div.innerHTML = `
+        <input type="text" class="descricao" placeholder="Descrição">
+        <input type="number" class="quantidade" placeholder="Qtd" min="1" value="1" oninput="atualizarTotais()">
+        <input type="text" class="valorUnitario" placeholder="Valor Unitário" oninput="formatarMoeda(this); atualizarTotais()">
+        <input type="text" class="totalItem" placeholder="Total" readonly>
+      `;
       document.getElementById("servicos").appendChild(div);
+    }
+
+    // 🔄 Atualizar totais
+    function atualizarTotais() {
+      let totalGeral = 0;
+      document.querySelectorAll(".servico-group").forEach(group => {
+        const qtd = parseInt(group.querySelector(".quantidade").value) || 0;
+        const valorUnit = parseFloat(group.querySelector(".valorUnitario").value.replace(/[^0-9,-]+/g,"").replace(",",".") || 0);
+        const total = qtd * valorUnit;
+        group.querySelector(".totalItem").value = total.toLocaleString("pt-BR", {style:"currency", currency:"BRL"});
+        totalGeral += total;
+      });
+
+      const taxaEntrega = document.getElementById("entregaRetirada").value === "Entrega"
+        ? parseFloat(document.getElementById("taxaEntrega").value.replace(/[^0-9,-]+/g,"").replace(",",".") || 0)
+        : 0;
+
+      totalGeral += taxaEntrega;
+      document.getElementById("valorTotal").value = totalGeral.toLocaleString("pt-BR", {style:"currency", currency:"BRL"});
     }
 
     function toggleTaxaEntrega() {
       const entrega = document.getElementById("entregaRetirada").value;
       document.getElementById("taxaEntregaField").style.display = entrega === "Entrega" ? "block" : "none";
+      atualizarTotais();
     }
 
+    // 💾 Salvar orçamento
     function salvarOrcamento() {
+      const numeroOrcamento = document.getElementById("numeroOrcamento").value;
       const cliente = document.getElementById("cliente").value;
       const contato = document.getElementById("contato").value;
       const rua = document.getElementById("rua").value;
@@ -136,25 +174,89 @@
       const referencia = document.getElementById("referencia").value;
       const endereco = `${rua}, ${numero} - ${bairro}. Ref: ${referencia}`;
       const documento = document.getElementById("documento").value;
-      const servicos = [...document.querySelectorAll(".servico")].map(s => s.value).filter(s => s);
+      const servicos = [...document.querySelectorAll(".servico-group")].map(group => ({
+        descricao: group.querySelector(".descricao").value,
+        quantidade: group.querySelector(".quantidade").value,
+        valorUnitario: group.querySelector(".valorUnitario").value,
+        total: group.querySelector(".totalItem").value
+      }));
       const descricao = document.getElementById("descricao").value;
-      const valor = document.getElementById("valor").value;
       const prazo = document.getElementById("prazo").value;
       const entregaRetirada = document.getElementById("entregaRetirada").value;
       const taxaEntrega = entregaRetirada === "Entrega" ? document.getElementById("taxaEntrega").value : "R$ 0,00";
+      const valorTotal = document.getElementById("valorTotal").value;
 
-      if (!cliente || !contato || !valor || !prazo) {
+      if (!cliente || !contato || !valorTotal || !prazo) {
         alert("Preencha todos os campos obrigatórios!");
         return;
       }
 
       const orcamentos = JSON.parse(localStorage.getItem("orcamentos")) || [];
       const id = Date.now();
-      orcamentos.push({ id, cliente, contato, endereco, documento, servicos, descricao, valor, prazo, entregaRetirada, taxaEntrega });
+      orcamentos.push({ id, numeroOrcamento, cliente, contato, endereco, documento, servicos, descricao, prazo, entregaRetirada, taxaEntrega, valorTotal });
       localStorage.setItem("orcamentos", JSON.stringify(orcamentos));
 
       carregarOrcamentos();
       limparCampos();
+    }
+
+    // 📄 Gerar PDF
+    function gerarPDF(id) {
+      const orcamentos = JSON.parse(localStorage.getItem("orcamentos")) || [];
+      const o = orcamentos.find(x => x.id === id);
+
+      const doc = new jsPDF();
+      let y = 20;
+
+      // Logo (precisa ser em base64 para aparecer no PDF real)
+      // doc.addImage("logo.png", "PNG", 15, y, 30, 30);
+
+      doc.setFontSize(16);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Orçamento Nº ${o.numeroOrcamento}`, 105, y, { align: "center" }); 
+      y += 10;
+
+      doc.setFontSize(12);
+      doc.text(`Cliente: ${o.cliente}`, 20, y); y += 6;
+      doc.text(`Contato: ${o.contato}`, 20, y); y += 6;
+      doc.text(`Endereço: ${o.endereco}`, 20, y); y += 6;
+      doc.text(`CPF/CNPJ: ${o.documento}`, 20, y); y += 10;
+
+      // Cabeçalho da tabela
+      doc.setFontSize(12);
+      doc.text("Descrição", 20, y);
+      doc.text("Valor Unitário", 95, y);
+      doc.text("Qtd", 140, y);
+      doc.text("Total", 170, y);
+      y += 6;
+      doc.line(20, y, 190, y); 
+      y += 4;
+
+      // Linhas da tabela
+      o.servicos.forEach(s => {
+        doc.text(s.descricao, 20, y);
+        doc.text(s.valorUnitario, 95, y);
+        doc.text(s.quantidade, 145, y);
+        doc.text(s.total, 170, y);
+        y += 6;
+      });
+
+      y += 6;
+      doc.setFontSize(12);
+      doc.text(`Total Geral: ${o.valorTotal}`, 150, y, { align: "right" }); 
+      y += 10;
+
+      if (o.descricao) {
+        doc.text(`Descrição adicional: ${o.descricao}`, 20, y); y += 8;
+      }
+
+      doc.text(`Prazo: ${o.prazo} dias úteis`, 20, y); y += 6;
+      doc.text(`Entrega/Retirada: ${o.entregaRetirada}`, 20, y); y += 6;
+      if (o.entregaRetirada === "Entrega") {
+        doc.text(`Taxa de Entrega: ${o.taxaEntrega}`, 20, y); y += 6;
+      }
+
+      doc.save(`orcamento_${o.cliente}.pdf`);
     }
 
     function carregarOrcamentos() {
@@ -166,66 +268,17 @@
         const div = document.createElement("div");
         div.className = "orcamento-card";
         div.innerHTML = `
+          <p><b>N° Orçamento:</b> ${o.numeroOrcamento}</p>
           <p><b>Cliente:</b> ${o.cliente}</p>
           <p><b>Contato:</b> ${o.contato}</p>
           <p><b>Endereço:</b> ${o.endereco}</p>
           <p><b>CPF/CNPJ:</b> ${o.documento}</p>
-          <p><b>Serviços:</b><br> ${o.servicos.join("<br>")}</p>
-          <p><b>Descrição:</b> ${o.descricao}</p>
-          <p><b>Valor:</b> ${o.valor}</p>
-          <p><b>Prazo:</b> ${o.prazo} dias úteis</p>
-          <p><b>Entrega/Retirada:</b> ${o.entregaRetirada}</p>
-          ${o.entregaRetirada === "Entrega" ? `<p><b>Taxa de Entrega:</b> ${o.taxaEntrega}</p>` : ""}
+          <p><b>Total Geral:</b> ${o.valorTotal}</p>
           <button class="btn-pdf" onclick="gerarPDF(${o.id})">📄 PDF</button>
           <button class="btn-del" onclick="deletarOrcamento(${o.id})">🗑 Excluir</button>
         `;
         lista.appendChild(div);
       });
-    }
-
-    // 📄 GERAR PDF
-    function gerarPDF(id) {
-      const orcamentos = JSON.parse(localStorage.getItem("orcamentos")) || [];
-      const o = orcamentos.find(x => x.id === id);
-
-      const doc = new jsPDF();
-
-      // Logo (precisa ser base64 se quiser carregar no PDF)
-      // doc.addImage("logo.png", "PNG", 15, 10, 30, 30);
-
-      doc.setFontSize(18);
-      doc.setTextColor(0, 180, 216);
-      doc.text("ORÇAMENTO - ELEVA PRINT", 105, 20, { align: "center" });
-
-      let y = 40;
-      doc.setFontSize(12);
-      doc.setTextColor(0,0,0);
-
-      doc.text(`Cliente: ${o.cliente}`, 20, y); y+=8;
-      doc.text(`Contato: ${o.contato}`, 20, y); y+=8;
-      doc.text(`Endereço: ${o.endereco}`, 20, y); y+=8;
-      doc.text(`CPF/CNPJ: ${o.documento}`, 20, y); y+=12;
-
-      doc.setFontSize(13);
-      doc.text("Serviços:", 20, y); y+=6;
-      doc.setFontSize(12);
-      o.servicos.forEach(s => { doc.text(`- ${s}`, 25, y); y+=6; });
-
-      y+=4;
-      doc.text(`Descrição adicional: ${o.descricao}`, 20, y); y+=12;
-
-      doc.text(`Valor Total: ${o.valor}`, 20, y); y+=8;
-      doc.text(`Prazo: ${o.prazo} dias úteis`, 20, y); y+=8;
-      doc.text(`Entrega/Retirada: ${o.entregaRetirada}`, 20, y); y+=8;
-      if (o.entregaRetirada === "Entrega") {
-        doc.text(`Taxa de Entrega: ${o.taxaEntrega}`, 20, y); y+=8;
-      }
-
-      y+=20;
-      doc.text("__________________________", 20, y);
-      doc.text("Assinatura / Empresa", 20, y+10);
-
-      doc.save(`orcamento_${o.cliente}.pdf`);
     }
 
     function deletarOrcamento(id) {
@@ -238,7 +291,14 @@
     function limparCampos() {
       document.querySelectorAll("input, textarea").forEach(el => el.value = "");
       document.getElementById("entregaRetirada").value = "Retirada";
-      document.getElementById("servicos").innerHTML = '<input type="text" class="servico">';
+      document.getElementById("servicos").innerHTML = `
+        <div class="servico-group">
+          <input type="text" class="descricao" placeholder="Descrição">
+          <input type="number" class="quantidade" placeholder="Qtd" min="1" value="1" oninput="atualizarTotais()">
+          <input type="text" class="valorUnitario" placeholder="Valor Unitário" oninput="formatarMoeda(this); atualizarTotais()">
+          <input type="text" class="totalItem" placeholder="Total" readonly>
+        </div>
+      `;
       toggleTaxaEntrega();
     }
 
