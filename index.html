@@ -7,7 +7,7 @@
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 950px; margin: 20px auto; padding: 20px; background: #f9f9f9; color: #333; }
     h2 { text-align: center; color: #00B4D8; margin-bottom: 20px; position: relative; }
-    #logo { position: absolute; top: 0; left: 20px; height: 60px; }
+    #logo { position: absolute; top: 0; left: 20px; height: 110px; }
     .form-card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     label { display: block; margin-top: 10px; font-weight: 600; color: #333; }
     input, textarea, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
@@ -19,11 +19,17 @@
     .orcamento-card { background: #fff; border-left: 6px solid #FFD500; padding: 15px; margin: 15px 0; border-radius: 8px; box-shadow: 0 3px 6px rgba(0,0,0,0.08); }
     .orcamento-card p { margin: 5px 0; }
     .btn-pdf { background: #00B4D8; color: #fff; margin-right: 10px; }
+    
     .btn-del { background: #e74c3c; color: #fff; }
+    
     .btn-pdf:hover { background: #0088a8; }
+    
     .btn-del:hover { background: #c0392b; }
+    
     h3 { color: #D0006F; }
+    
     #taxaEntregaField { display: none; }
+    
     .servico-group { display: grid; grid-template-columns: 2fr 0.6fr 1fr 1fr; gap: 8px; margin-bottom: 10px; align-items: center; }
     .servico-group input { margin-top: 0; }
     .right { text-align: right; }
@@ -31,7 +37,7 @@
 </head>
 <body>
   <!-- LOGO -->
-  <img id="logo" src="logo.png" alt="Logo">
+  <img id="logo" src="https://i.postimg.cc/BbMKvfdL/LOGO-ELEVA-PRINT.png" alt="Logo">
 
   <h2>📑 Orçamentos Eleva Print</h2>
 
@@ -256,7 +262,7 @@
       const doc = new jsPDF({ unit: "mm", format: "a4" });
       let y = 20;
 
-      // doc.addImage("logo_base64_aqui", "PNG", 20, 14, 28, 28); // (opcional)
+      doc.addImage('https://i.postimg.cc/BbMKvfdL/LOGO-ELEVA-PRINT.png'); // (opcional)
 
       doc.setFont("helvetica", "bold");
       doc.setFontSize(16);
