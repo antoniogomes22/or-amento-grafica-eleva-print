@@ -1,69 +1,70 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Orçamentos Eleva Print</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 950px; margin: 20px auto; padding: 20px; background: #f9f9f9; color: #333; }
     h2 { text-align: center; color: #00B4D8; margin-bottom: 20px; position: relative; }
     #logo { position: absolute; top: 0; left: 20px; height: 60px; }
-    .form-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    label { display: block; margin-top: 10px; font-weight: bold; color: #333; }
+    .form-card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    label { display: block; margin-top: 10px; font-weight: 600; color: #333; }
     input, textarea, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
-    button { margin-top: 15px; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: 0.3s; }
-    .btn-add { background: #D0006F; color: white; width: 100%; }
+    button { margin-top: 15px; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: .3s; }
+    .btn-add { background: #D0006F; color: #fff; width: 100%; }
     .btn-add:hover { background: #a80055; }
     .btn-service { background: #FFD500; color: #333; margin-top: 8px; }
     .btn-service:hover { background: #e6c200; }
-    .orcamento-card { background: white; border-left: 6px solid #FFD500; padding: 15px; margin: 15px 0; border-radius: 8px; box-shadow: 0 3px 6px rgba(0,0,0,0.08); }
+    .orcamento-card { background: #fff; border-left: 6px solid #FFD500; padding: 15px; margin: 15px 0; border-radius: 8px; box-shadow: 0 3px 6px rgba(0,0,0,0.08); }
     .orcamento-card p { margin: 5px 0; }
-    .btn-pdf { background: #00B4D8; color: white; margin-right: 10px; }
-    .btn-del { background: #e74c3c; color: white; }
+    .btn-pdf { background: #00B4D8; color: #fff; margin-right: 10px; }
+    .btn-del { background: #e74c3c; color: #fff; }
     .btn-pdf:hover { background: #0088a8; }
     .btn-del:hover { background: #c0392b; }
     h3 { color: #D0006F; }
     #taxaEntregaField { display: none; }
-    .servico-group { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+    .servico-group { display: grid; grid-template-columns: 2fr 0.6fr 1fr 1fr; gap: 8px; margin-bottom: 10px; align-items: center; }
     .servico-group input { margin-top: 0; }
+    .right { text-align: right; }
   </style>
 </head>
 <body>
   <!-- LOGO -->
-  <img id="logo" src="logo.png" alt="Logo"> 
+  <img id="logo" src="logo.png" alt="Logo">
 
   <h2>📑 Orçamentos Eleva Print</h2>
-  
+
   <div class="form-card">
     <label>N° do Orçamento:</label>
-    <input type="text" id="numeroOrcamento" value="ORC-${Date.now()}" />
+    <input type="text" id="numeroOrcamento" />
 
     <label>Cliente:</label>
-    <input type="text" id="cliente">
+    <input type="text" id="cliente" />
 
     <label>Contato (WhatsApp/Telefone):</label>
-    <input type="text" id="contato" maxlength="15" oninput="formatarTelefone(this)">
+    <input type="text" id="contato" maxlength="15" oninput="formatarTelefone(this)" />
 
     <h4>📍 Endereço</h4>
     <label>Rua:</label>
-    <input type="text" id="rua">
+    <input type="text" id="rua" />
     <label>Bairro:</label>
-    <input type="text" id="bairro">
+    <input type="text" id="bairro" />
     <label>Número:</label>
-    <input type="number" id="numero">
+    <input type="number" id="numero" />
     <label>Ponto de Referência:</label>
-    <input type="text" id="referencia">
+    <input type="text" id="referencia" />
 
     <label>CPF ou CNPJ:</label>
-    <input type="text" id="documento" oninput="formatarDocumento(this)">
+    <input type="text" id="documento" oninput="formatarDocumento(this)" />
 
     <label>Serviços/Produtos:</label>
     <div id="servicos">
       <div class="servico-group">
-        <input type="text" class="descricao" placeholder="Descrição">
-        <input type="number" class="quantidade" placeholder="Qtd" min="1" value="1" oninput="atualizarTotais()">
-        <input type="text" class="valorUnitario" placeholder="Valor Unitário" oninput="formatarMoeda(this); atualizarTotais()">
-        <input type="text" class="totalItem" placeholder="Total" readonly>
+        <input type="text" class="descricao" placeholder="Descrição" />
+        <input type="number" class="quantidade" placeholder="Qtd" min="1" value="1" oninput="atualizarTotais()" />
+        <input type="number" class="valorUnitario" placeholder="Valor Unitário (R$)" min="0" step="0.01" oninput="atualizarTotais()" />
+        <input type="text" class="totalItem right" placeholder="Total (R$)" readonly value="R$ 0,00" />
       </div>
     </div>
     <button type="button" class="btn-service" onclick="adicionarServico()">➕ Adicionar Serviço</button>
@@ -72,7 +73,7 @@
     <textarea id="descricao"></textarea>
 
     <label>Prazo (dias úteis):</label>
-    <input type="number" id="prazo">
+    <input type="number" id="prazo" />
 
     <label>Entrega ou Retirada:</label>
     <select id="entregaRetirada" onchange="toggleTaxaEntrega()">
@@ -82,11 +83,11 @@
 
     <div id="taxaEntregaField">
       <label>Taxa de Entrega (R$):</label>
-      <input type="text" id="taxaEntrega" value="0" oninput="formatarMoeda(this); atualizarTotais()">
+      <input type="number" id="taxaEntrega" min="0" step="0.01" value="0" oninput="atualizarTotais()" />
     </div>
 
     <label><b>Total Geral (R$):</b></label>
-    <input type="text" id="valorTotal" readonly>
+    <input type="text" id="valorTotal" class="right" readonly value="R$ 0,00" />
 
     <button class="btn-add" onclick="salvarOrcamento()">Salvar Orçamento</button>
   </div>
@@ -97,166 +98,110 @@
   <script>
     const { jsPDF } = window.jspdf;
 
-    // 📱 Formatar telefone
+    // ---------- Utilidades ----------
+    function brl(n) {
+      return (Number(n) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+    function toNumber(val) {
+      if (val === "" || val === null || val === undefined) return 0;
+      return Number(val); // inputs type=number já entregam ponto como decimal
+    }
+    function gerarNumeroOrcamento() {
+      const d = new Date();
+      const pad = (x) => String(x).padStart(2, "0");
+      return `ORC${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+    }
+
+    // ---------- Máscaras ----------
     function formatarTelefone(input) {
       let v = input.value.replace(/\D/g, "").substring(0, 11);
-      if (v.length <= 10) {
-        input.value = v.replace(/(\\d{2})(\\d{4})(\\d{0,4})/, "($1) $2-$3");
-      } else {
-        input.value = v.replace(/(\\d{2})(\\d{5})(\\d{0,4})/, "($1) $2-$3");
-      }
+      input.value = v.length <= 10
+        ? v.replace(/(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3")
+        : v.replace(/(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3");
     }
-
-    // 🧾 Formatar CPF/CNPJ
     function formatarDocumento(input) {
-      let v = input.value.replace(/\\D/g, "");
-      if (v.length <= 11) {
-        input.value = v.replace(/(\\d{3})(\\d{3})(\\d{3})(\\d{0,2})/, "$1.$2.$3-$4");
-      } else {
-        input.value = v.replace(/(\\d{2})(\\d{3})(\\d{3})(\\d{4})(\\d{0,2})/, "$1.$2.$3/$4-$5");
-      }
+      let v = input.value.replace(/\D/g, "");
+      input.value = v.length <= 11
+        ? v.replace(/(\d{3})(\d{3})(\d{3})(\d{0,2})/, "$1.$2.$3-$4")
+        : v.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2})/, "$1.$2.$3/$4-$5");
     }
 
-    // 💰 Formatar moeda BRL
-    function formatarMoeda(input) {
-      let v = input.value.replace(/\\D/g, "");
-      if (!v) { input.value = ""; return; }
-      v = (v/100).toLocaleString("pt-BR", {style:"currency", currency:"BRL"});
-      input.value = v;
-    }
-
-    // ➕ Adicionar serviço extra
+    // ---------- Serviços ----------
     function adicionarServico() {
-      let div = document.createElement("div");
+      const div = document.createElement("div");
       div.className = "servico-group";
       div.innerHTML = `
-        <input type="text" class="descricao" placeholder="Descrição">
-        <input type="number" class="quantidade" placeholder="Qtd" min="1" value="1" oninput="atualizarTotais()">
-        <input type="text" class="valorUnitario" placeholder="Valor Unitário" oninput="formatarMoeda(this); atualizarTotais()">
-        <input type="text" class="totalItem" placeholder="Total" readonly>
+        <input type="text" class="descricao" placeholder="Descrição" />
+        <input type="number" class="quantidade" placeholder="Qtd" min="1" value="1" oninput="atualizarTotais()" />
+        <input type="number" class="valorUnitario" placeholder="Valor Unitário (R$)" min="0" step="0.01" oninput="atualizarTotais()" />
+        <input type="text" class="totalItem right" placeholder="Total (R$)" readonly value="R$ 0,00" />
       `;
       document.getElementById("servicos").appendChild(div);
     }
 
-    // 🔄 Atualizar totais
     function atualizarTotais() {
       let totalGeral = 0;
       document.querySelectorAll(".servico-group").forEach(group => {
-        const qtd = parseInt(group.querySelector(".quantidade").value) || 0;
-        const valorUnit = parseFloat(group.querySelector(".valorUnitario").value.replace(/[^0-9,-]+/g,"").replace(",",".") || 0);
+        const qtd = toNumber(group.querySelector(".quantidade").value);
+        const valorUnit = toNumber(group.querySelector(".valorUnitario").value);
         const total = qtd * valorUnit;
-        group.querySelector(".totalItem").value = total.toLocaleString("pt-BR", {style:"currency", currency:"BRL"});
+        group.querySelector(".totalItem").value = brl(total);
         totalGeral += total;
       });
 
-      const taxaEntrega = document.getElementById("entregaRetirada").value === "Entrega"
-        ? parseFloat(document.getElementById("taxaEntrega").value.replace(/[^0-9,-]+/g,"").replace(",",".") || 0)
-        : 0;
-
+      const entrega = document.getElementById("entregaRetirada").value === "Entrega";
+      const taxaEntrega = entrega ? toNumber(document.getElementById("taxaEntrega").value) : 0;
       totalGeral += taxaEntrega;
-      document.getElementById("valorTotal").value = totalGeral.toLocaleString("pt-BR", {style:"currency", currency:"BRL"});
+
+      document.getElementById("valorTotal").value = brl(totalGeral);
     }
 
     function toggleTaxaEntrega() {
-      const entrega = document.getElementById("entregaRetirada").value;
-      document.getElementById("taxaEntregaField").style.display = entrega === "Entrega" ? "block" : "none";
+      const entrega = document.getElementById("entregaRetirada").value === "Entrega";
+      document.getElementById("taxaEntregaField").style.display = entrega ? "block" : "none";
       atualizarTotais();
     }
 
-    // 💾 Salvar orçamento
+    // ---------- Persistência ----------
     function salvarOrcamento() {
       const numeroOrcamento = document.getElementById("numeroOrcamento").value;
-      const cliente = document.getElementById("cliente").value;
-      const contato = document.getElementById("contato").value;
-      const rua = document.getElementById("rua").value;
-      const bairro = document.getElementById("bairro").value;
-      const numero = document.getElementById("numero").value;
-      const referencia = document.getElementById("referencia").value;
-      const endereco = `${rua}, ${numero} - ${bairro}. Ref: ${referencia}`;
-      const documento = document.getElementById("documento").value;
-      const servicos = [...document.querySelectorAll(".servico-group")].map(group => ({
-        descricao: group.querySelector(".descricao").value,
-        quantidade: group.querySelector(".quantidade").value,
-        valorUnitario: group.querySelector(".valorUnitario").value,
-        total: group.querySelector(".totalItem").value
-      }));
-      const descricao = document.getElementById("descricao").value;
+      const cliente = document.getElementById("cliente").value.trim();
+      const contato = document.getElementById("contato").value.trim();
+      const rua = document.getElementById("rua").value.trim();
+      const bairro = document.getElementById("bairro").value.trim();
+      const numero = document.getElementById("numero").value.trim();
+      const referencia = document.getElementById("referencia").value.trim();
+      const endereco = `${rua}, ${numero} - ${bairro}. Ref: ${referencia}`.trim();
+      const documento = document.getElementById("documento").value.trim();
+      const servicos = [...document.querySelectorAll(".servico-group")].map(group => {
+        const descricao = group.querySelector(".descricao").value.trim();
+        const quantidade = toNumber(group.querySelector(".quantidade").value);
+        const valorUnitario = toNumber(group.querySelector(".valorUnitario").value);
+        const total = quantidade * valorUnitario;
+        return { descricao, quantidade, valorUnitario, total };
+      });
+      const descricao = document.getElementById("descricao").value.trim();
       const prazo = document.getElementById("prazo").value;
       const entregaRetirada = document.getElementById("entregaRetirada").value;
-      const taxaEntrega = entregaRetirada === "Entrega" ? document.getElementById("taxaEntrega").value : "R$ 0,00";
-      const valorTotal = document.getElementById("valorTotal").value;
+      const taxaEntrega = entregaRetirada === "Entrega" ? toNumber(document.getElementById("taxaEntrega").value) : 0;
 
-      if (!cliente || !contato || !valorTotal || !prazo) {
-        alert("Preencha todos os campos obrigatórios!");
+      const totalGeral = servicos.reduce((acc, s) => acc + s.total, 0) + taxaEntrega;
+
+      if (!numeroOrcamento || !cliente || !contato || !prazo || totalGeral <= 0) {
+        alert("Preencha N° do orçamento, cliente, contato, prazo e ao menos 1 item com valor.");
         return;
       }
 
       const orcamentos = JSON.parse(localStorage.getItem("orcamentos")) || [];
       const id = Date.now();
-      orcamentos.push({ id, numeroOrcamento, cliente, contato, endereco, documento, servicos, descricao, prazo, entregaRetirada, taxaEntrega, valorTotal });
+      orcamentos.push({
+        id, numeroOrcamento, cliente, contato, endereco, documento,
+        servicos, descricao, prazo, entregaRetirada, taxaEntrega, totalGeral
+      });
       localStorage.setItem("orcamentos", JSON.stringify(orcamentos));
 
       carregarOrcamentos();
       limparCampos();
-    }
-
-    // 📄 Gerar PDF
-    function gerarPDF(id) {
-      const orcamentos = JSON.parse(localStorage.getItem("orcamentos")) || [];
-      const o = orcamentos.find(x => x.id === id);
-
-      const doc = new jsPDF();
-      let y = 20;
-
-      // Logo (precisa ser em base64 para aparecer no PDF real)
-      // doc.addImage("logo.png", "PNG", 15, y, 30, 30);
-
-      doc.setFontSize(16);
-      doc.setTextColor(0, 0, 0);
-      doc.text(`Orçamento Nº ${o.numeroOrcamento}`, 105, y, { align: "center" }); 
-      y += 10;
-
-      doc.setFontSize(12);
-      doc.text(`Cliente: ${o.cliente}`, 20, y); y += 6;
-      doc.text(`Contato: ${o.contato}`, 20, y); y += 6;
-      doc.text(`Endereço: ${o.endereco}`, 20, y); y += 6;
-      doc.text(`CPF/CNPJ: ${o.documento}`, 20, y); y += 10;
-
-      // Cabeçalho da tabela
-      doc.setFontSize(12);
-      doc.text("Descrição", 20, y);
-      doc.text("Valor Unitário", 95, y);
-      doc.text("Qtd", 140, y);
-      doc.text("Total", 170, y);
-      y += 6;
-      doc.line(20, y, 190, y); 
-      y += 4;
-
-      // Linhas da tabela
-      o.servicos.forEach(s => {
-        doc.text(s.descricao, 20, y);
-        doc.text(s.valorUnitario, 95, y);
-        doc.text(s.quantidade, 145, y);
-        doc.text(s.total, 170, y);
-        y += 6;
-      });
-
-      y += 6;
-      doc.setFontSize(12);
-      doc.text(`Total Geral: ${o.valorTotal}`, 150, y, { align: "right" }); 
-      y += 10;
-
-      if (o.descricao) {
-        doc.text(`Descrição adicional: ${o.descricao}`, 20, y); y += 8;
-      }
-
-      doc.text(`Prazo: ${o.prazo} dias úteis`, 20, y); y += 6;
-      doc.text(`Entrega/Retirada: ${o.entregaRetirada}`, 20, y); y += 6;
-      if (o.entregaRetirada === "Entrega") {
-        doc.text(`Taxa de Entrega: ${o.taxaEntrega}`, 20, y); y += 6;
-      }
-
-      doc.save(`orcamento_${o.cliente}.pdf`);
     }
 
     function carregarOrcamentos() {
@@ -271,9 +216,7 @@
           <p><b>N° Orçamento:</b> ${o.numeroOrcamento}</p>
           <p><b>Cliente:</b> ${o.cliente}</p>
           <p><b>Contato:</b> ${o.contato}</p>
-          <p><b>Endereço:</b> ${o.endereco}</p>
-          <p><b>CPF/CNPJ:</b> ${o.documento}</p>
-          <p><b>Total Geral:</b> ${o.valorTotal}</p>
+          <p><b>Total Geral:</b> ${brl(o.totalGeral)}</p>
           <button class="btn-pdf" onclick="gerarPDF(${o.id})">📄 PDF</button>
           <button class="btn-del" onclick="deletarOrcamento(${o.id})">🗑 Excluir</button>
         `;
@@ -291,18 +234,86 @@
     function limparCampos() {
       document.querySelectorAll("input, textarea").forEach(el => el.value = "");
       document.getElementById("entregaRetirada").value = "Retirada";
+      document.getElementById("taxaEntregaField").style.display = "none";
       document.getElementById("servicos").innerHTML = `
         <div class="servico-group">
-          <input type="text" class="descricao" placeholder="Descrição">
-          <input type="number" class="quantidade" placeholder="Qtd" min="1" value="1" oninput="atualizarTotais()">
-          <input type="text" class="valorUnitario" placeholder="Valor Unitário" oninput="formatarMoeda(this); atualizarTotais()">
-          <input type="text" class="totalItem" placeholder="Total" readonly>
+          <input type="text" class="descricao" placeholder="Descrição" />
+          <input type="number" class="quantidade" placeholder="Qtd" min="1" value="1" oninput="atualizarTotais()" />
+          <input type="number" class="valorUnitario" placeholder="Valor Unitário (R$)" min="0" step="0.01" oninput="atualizarTotais()" />
+          <input type="text" class="totalItem right" placeholder="Total (R$)" readonly value="R$ 0,00" />
         </div>
       `;
-      toggleTaxaEntrega();
+      document.getElementById("numeroOrcamento").value = gerarNumeroOrcamento();
+      document.getElementById("valorTotal").value = brl(0);
     }
 
-    carregarOrcamentos();
+    // ---------- PDF ----------
+    function gerarPDF(id) {
+      const orcamentos = JSON.parse(localStorage.getItem("orcamentos")) || [];
+      const o = orcamentos.find(x => x.id === id);
+      if (!o) return;
+
+      const doc = new jsPDF({ unit: "mm", format: "a4" });
+      let y = 20;
+
+      // doc.addImage("logo_base64_aqui", "PNG", 20, 14, 28, 28); // (opcional)
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text(`Orçamento Nº ${o.numeroOrcamento}`, 200 - 20, y, { align: "right" });
+      y += 8;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.text(`Cliente: ${o.cliente}`, 20, y); y += 6;
+      doc.text(`Contato: ${o.contato}`, 20, y); y += 6;
+      if (o.endereco) { doc.text(`Endereço: ${o.endereco}`, 20, y); y += 6; }
+      if (o.documento) { doc.text(`CPF/CNPJ: ${o.documento}`, 20, y); y += 8; }
+
+      // Cabeçalho da tabela
+      const xDesc = 20, xVU = 120, xQtd = 155, xTotal = 175;
+      doc.setFont("helvetica", "bold");
+      doc.text("Descrição", xDesc, y);
+      doc.text("Valor Unitário", xVU, y);
+      doc.text("Quantidade", xQtd, y);
+      doc.text("Total", xTotal, y);
+      y += 2; doc.line(20, y, 190, y); y += 5;
+      doc.setFont("helvetica", "normal");
+
+      // Linhas
+      o.servicos.forEach(s => {
+        const desc = doc.splitTextToSize(s.descricao || "-", 95);
+        doc.text(desc, xDesc, y);
+        doc.text(brl(s.valorUnitario), xVU, y);
+        doc.text(String(s.quantidade), xQtd + 8, y, { align: "right" });
+        doc.text(brl(s.total), xTotal, y);
+
+        const lineHeight = 6 * (Array.isArray(desc) ? desc.length : 1);
+        y += lineHeight;
+      });
+
+      y += 4; doc.line(120, y, 190, y); y += 7;
+      doc.setFont("helvetica", "bold");
+      doc.text(`Total Geral: ${brl(o.totalGeral)}`, 190, y, { align: "right" });
+      doc.setFont("helvetica", "normal");
+      y += 10;
+
+      if (o.descricao) { doc.text(`Outras informações: ${o.descricao}`, 20, y); y += 8; }
+      doc.text(`Prazo: ${o.prazo} dias úteis`, 20, y); y += 6;
+      doc.text(`Entrega/Retirada: ${o.entregaRetirada}`, 20, y); y += 6;
+      if (o.entregaRetirada === "Entrega" && o.taxaEntrega) {
+        doc.text(`Taxa de Entrega: ${brl(o.taxaEntrega)}`, 20, y); y += 6;
+      }
+
+      doc.save(`orcamento_${o.cliente}.pdf`);
+    }
+
+    // ---------- Init ----------
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("numeroOrcamento").value = gerarNumeroOrcamento();
+      carregarOrcamentos();
+      atualizarTotais();
+    });
   </script>
 </body>
 </html>
